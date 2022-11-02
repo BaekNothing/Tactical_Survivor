@@ -13,4 +13,4 @@ MonoBehaviour:
   m_Name: PlayerDataObject
   m_EditorClassIdentifier: Assembly-CSharp::PlayerDataObject
   hp: 10
-  speed: {x: 10, y: 10}
+  speed: {x: 14.822145, y: 14.822145}
