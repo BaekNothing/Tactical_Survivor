@@ -17,7 +17,9 @@ public class _main : MonoBehaviour
 
 
     void Start(){
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 30;
+        
+        Screen.SetResolution(1080, 1920, true);
         Application.SetStackTraceLogType(LogType.Error, StackTraceLogType.Full);
     }
 

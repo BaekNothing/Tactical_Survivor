@@ -186,6 +186,7 @@ public class EnemyAttack : PrimitiveState
 
         isDone = false;
         isReady = true;
+        Utility.FindT<Animator>(handler.transform, "dummy").SetBool("hit", false);
     }
 
     public override void StateDoAction()
@@ -194,9 +195,9 @@ public class EnemyAttack : PrimitiveState
 
         if(timer >= handler.duration)
         {
-
             if(Vector3.Distance(handler.transform.position, StaticObjects.Player.transform.position) < attakRange)
             {
+                Utility.FindT<Animator>(handler.transform, "dummy").SetBool("hit", true);
                 Utility.FindT<Transform>(handler.transform, "attack").gameObject.SetActive(true);
                 StaticObjects.PlayerDataObject.hp--;
             }
@@ -235,12 +236,13 @@ public class EnemyDead : PrimitiveState
         //Face to player
         Vector3 direction = StaticObjects.Player.transform.position - handler.transform.position;
         handler.transform.forward = direction;
-        moveValue = enemyAction.ObjectAddForce(handler.transform, moveValue);
+        //moveValue = enemyAction.ObjectAddForce(handler.transform, moveValue);
 
         if(wasSetDeadAction) return;
         wasSetDeadAction = true;
         var particleTransform =
         Utility.FindT<Transform>(handler.transform, "vfx");
+        Utility.FindT<Animator>(handler.transform, "dummy").SetBool("dead", true);
         EffectAction action = particleTransform.GetComponent<EffectAction>();
         if(action == null)
             action = particleTransform.gameObject.AddComponent<EffectAction>();
