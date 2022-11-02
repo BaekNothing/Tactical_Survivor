@@ -88,7 +88,7 @@ public class EnemyMove : PrimitiveState
     EnemyAction.actionValue moveValue; 
 
     float distanceGap = 5f;
-    float distanceMax = 10f;
+    float distanceMax = 20f;
 
     public override void StateInit()
     {
@@ -175,6 +175,9 @@ public class EnemyMove : PrimitiveState
 
 public class EnemyAttack : PrimitiveState
 {
+    float attakRange = 5f;
+
+    EnemyAction action = new EnemyAction();
     public override void StateInit()
     {
         handler.delay = 0.1f;
@@ -190,7 +193,15 @@ public class EnemyAttack : PrimitiveState
         timer += Time.deltaTime * Utility.frameSkipCount;
 
         if(timer >= handler.duration)
+        {
+
+            if(Vector3.Distance(handler.transform.position, StaticObjects.Player.transform.position) < attakRange)
+            {
+                Utility.FindT<Transform>(handler.transform, "attack").gameObject.SetActive(true);
+                StaticObjects.PlayerDataObject.hp--;
+            }
             isDone = true;
+        }
     }
 
     public override void StateEnd()
@@ -200,7 +211,8 @@ public class EnemyAttack : PrimitiveState
 
     public override stateFlag GetNextState()
     {
-        return stateFlag.dead;
+        action.Dispose();
+        return stateFlag.move;
     }
 }
 
