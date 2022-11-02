@@ -304,7 +304,7 @@ public class Player : MonoBehaviour
     }
 
     void UpdateUI(){
-        _hpText.text = StaticObjects.PlayerDataObject.hp.ToString();        
+        hpText.text = StaticObjects.PlayerDataObject.hp.ToString();        
     }
 
 #endregion
