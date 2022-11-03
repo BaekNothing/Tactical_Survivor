@@ -157,14 +157,18 @@ public class SampleMove : PrimitiveState
 
     public override void StateDoAction()
     {
-        rotateValue = action.ObjectRotate(handler.transform, rotateValue);
-        moveValue = action.ObjectMove(handler.transform, moveValue);
+        // this is regacy code when I was trying to use job system and not use rigidbody
+        // rigidbody is much easier to use & faster than job system witch use with transform
 
-        //Check
-        if(rotateValue.timer >= rotateValue.endValue
-            && moveValue.timer >= moveValue.endValue)
-            isDone = true;
-        action.Dispose();
+        // rotateValue = action.ObjectRotate(handler.rigidbody, rotateValue);
+        // moveValue = action.ObjectMove(handler.rigidbody, moveValue);
+
+        // //Check
+        // if(rotateValue.timer >= rotateValue.endValue
+        //     && moveValue.timer >= moveValue.endValue)
+        //     isDone = true;
+        // action.Dispose();
+        isDone = true;
     }
 
     public override void StateEnd()
@@ -188,13 +192,13 @@ public class SampleDead : PrimitiveState
     public override void StateDoAction()
     {
         var particleTransform =
-        Utility.FindT<Transform>(handler.transform, "vfx");
+        Utility.FindT<Transform>(handler.rigidbody.transform, "vfx");
         EffectAction action = particleTransform.GetComponent<EffectAction>();
         if(action == null)
             action = particleTransform.gameObject.AddComponent<EffectAction>();
         action.stopAction = ()=>
         {
-            UnityEngine.Object.Destroy(handler.transform.gameObject);
+            UnityEngine.Object.Destroy(handler.rigidbody.gameObject);
             handler.CleanUpState();
         };
         particleTransform.transform.gameObject.SetActive(true);
@@ -227,7 +231,8 @@ public class PrimitiveObject
         };
 
         stateHandler.Init(stateMap, "", bundle);
-        stateHandler.SetTransform(transform);
+        //stateHandler.SetTransform(transform);
+        stateHandler.SetRigidbody(transform.GetComponent<Rigidbody>());
         //stateHandler.SetPhysicsData(data, transform);
         stateHandler.Action();
     }

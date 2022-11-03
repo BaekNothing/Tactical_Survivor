@@ -27,7 +27,8 @@ public class EnemyObject : PrimitiveObject
         };
 
         stateHandler.Init(stateMap, "", bundle);
-        stateHandler.SetTransform(transform);
+        //stateHandler.SetTransform(transform);
+        stateHandler.SetRigidbody(transform.GetComponent<Rigidbody>());
         stateHandler.Action();
 
         transform.position = new Vector3(UnityEngine.Random.Range(2f, 10f), 

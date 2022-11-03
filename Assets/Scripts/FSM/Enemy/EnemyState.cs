@@ -57,7 +57,7 @@ public class EnemyIdle : PrimitiveState
 
         NativeArray<bool> isFound = new NativeArray<bool>(1, Allocator.TempJob);
         //Set
-        job = new IdleJob(StaticObjects.Player.transform.position, handler.transform.position, isFound, 10f);
+        job = new IdleJob(StaticObjects.Player.transform.position, handler.rigidbody.position, isFound, 10f);
         jobHandle = job.Schedule();
         jobHandle.Complete();
 
@@ -99,28 +99,29 @@ public class EnemyMove : PrimitiveState
         isReady = true;
         isDone = false;
 
-        SpreadOut();
+        //SpreadOut();
         MoveToPlayer();
     }
 
-    void SpreadOut()
-    {
-        if(handler.bundle.index == 0) return;
+    // rigidBody님이 해주시니까 필요없음.
+    // void SpreadOut()
+    // {
+    //     if(handler.bundle.index == 0) return;
 
-        Vector3 direction = handler.transform.position - 
-            StaticObjects.processingMachine.objects[handler.bundle.index - 1].transform.position;
-        if(direction.magnitude < handler.bundle.transform.localScale.x)
-        {
-            handler.transform.position += direction.normalized * (
-                handler.bundle.transform.localScale.x - direction.magnitude);
-        }
-    }
+    //     Vector3 direction = handler.transform.position - 
+    //         StaticObjects.processingMachine.objects[handler.bundle.index - 1].transform.position;
+    //     if(direction.magnitude < handler.bundle.transform.localScale.x)
+    //     {
+    //         handler.transform.position += direction.normalized * (
+    //             handler.bundle.transform.localScale.x - direction.magnitude);
+    //     }
+    // }
 
     void MoveToPlayer(){
         //Set Direction and Distance from here to player
-        Vector3 direction = StaticObjects.Player.transform.position - handler.transform.position;
-        float rotate = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg - handler.transform.eulerAngles.y;
-        float distance = Vector3.Distance(StaticObjects.Player.transform.position, handler.transform.position) - distanceGap;
+        Vector3 direction = StaticObjects.Player.transform.position - handler.rigidbody.position;
+        float rotate = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg - handler.rigidbody.rotation.y;
+        float distance = Vector3.Distance(StaticObjects.Player.transform.position, handler.rigidbody.position) - distanceGap;
 
         //May Not fount player, move to random direction
         if(distance > distanceMax)
@@ -138,9 +139,17 @@ public class EnemyMove : PrimitiveState
 
     public override void StateDoAction()
     {
-        rotateValue = action.ObjectRotate(handler.transform, rotateValue);
-        moveValue = action.ObjectMove(handler.transform, moveValue);
+        // 6frame 정도 차이가 난다!!
+        // rotateValue = action.ObjectRotate(handler.transform, rotateValue);
+        // moveValue = action.ObjectMove(handler.transform, moveValue);
 
+        // rotateValue = action.ObjectRotate(handler.rigidbody, rotateValue);
+        // moveValue = action.ObjectMove(handler.rigidbody, moveValue);
+
+        var result = action.ObjectMoveRotate(handler.rigidbody, moveValue, rotateValue);
+        moveValue = result.Item1;
+        rotateValue = result.Item2;
+        
         //Check
         if(rotateValue.timer >= rotateValue.endValue
             && moveValue.timer >= moveValue.endValue)
@@ -166,7 +175,7 @@ public class EnemyMove : PrimitiveState
     bool CheckCanAtack()
     {
         if(Vector3.Distance(StaticObjects.Player.transform.position, 
-            handler.transform.position) < attackRange)
+            handler.rigidbody.position) < attackRange)
             return true;
         else
             return false;
@@ -186,7 +195,7 @@ public class EnemyAttack : PrimitiveState
 
         isDone = false;
         isReady = true;
-        Utility.FindT<Animator>(handler.transform, "dummy").SetBool("hit", false);
+        Utility.FindT<Animator>(handler.rigidbody.transform, "dummy").SetBool("hit", false);
     }
 
     public override void StateDoAction()
@@ -195,10 +204,10 @@ public class EnemyAttack : PrimitiveState
 
         if(timer >= handler.duration)
         {
-            if(Vector3.Distance(handler.transform.position, StaticObjects.Player.transform.position) < attakRange)
+            if(Vector3.Distance(handler.rigidbody.position, StaticObjects.Player.transform.position) < attakRange)
             {
-                Utility.FindT<Animator>(handler.transform, "dummy").SetBool("hit", true);
-                Utility.FindT<Transform>(handler.transform, "attack").gameObject.SetActive(true);
+                Utility.FindT<Animator>(handler.rigidbody.transform, "dummy").SetBool("hit", true);
+                Utility.FindT<Transform>(handler.rigidbody.transform, "attack").gameObject.SetActive(true);
                 StaticObjects.PlayerDataObject.hp--;
             }
             isDone = true;
@@ -234,15 +243,15 @@ public class EnemyDead : PrimitiveState
     public override void StateDoAction()
     {
         //Face to player
-        Vector3 direction = StaticObjects.Player.transform.position - handler.transform.position;
-        handler.transform.forward = direction;
+        Vector3 direction = StaticObjects.Player.transform.position - handler.rigidbody.position;
+        handler.rigidbody.transform.forward = direction;
         //moveValue = enemyAction.ObjectAddForce(handler.transform, moveValue);
 
         if(wasSetDeadAction) return;
         wasSetDeadAction = true;
         var particleTransform =
-        Utility.FindT<Transform>(handler.transform, "vfx");
-        Utility.FindT<Animator>(handler.transform, "dummy").SetBool("dead", true);
+        Utility.FindT<Transform>(handler.rigidbody.transform, "vfx");
+        Utility.FindT<Animator>(handler.rigidbody.transform, "dummy").SetBool("dead", true);
         EffectAction action = particleTransform.GetComponent<EffectAction>();
         if(action == null)
             action = particleTransform.gameObject.AddComponent<EffectAction>();
@@ -252,7 +261,7 @@ public class EnemyDead : PrimitiveState
             isDone = true;
             StaticObjects.processingMachine.RemoveBundle(handler.bundle);
             handler.CleanUpState();
-            UnityEngine.Object.Destroy(handler.transform.gameObject);
+            UnityEngine.Object.Destroy(handler.rigidbody.gameObject);
         };
         particleTransform.transform.gameObject.SetActive(true);
     }
@@ -293,52 +302,29 @@ public class EnemyAction
         }
     }
 
-    public actionValue ObjectRotate(Transform transform, actionValue value)
+    public Tuple<actionValue, actionValue> ObjectMoveRotate(Rigidbody rigidbody, actionValue moveValue, actionValue rotateValue)
     {
         //Check
-        if(value.timer >= value.endValue)
-            return value;
+        if(moveValue.timer >= moveValue.endValue
+            && rotateValue.timer >= rotateValue.endValue)
+            return new Tuple<actionValue, actionValue>(moveValue, rotateValue);
 
         //Timer
-        value.timer += value.speed;
-        JobHandle jobHandle;
+        moveValue.timer += moveValue.speed;
+        rotateValue.timer += rotateValue.speed;
+
 
         //Set
-        
-        addVector updater = new addVector(
-            transform.rotation.eulerAngles, 
-            new Vector3(0, value.speed, 0), output);
+        rigidbody.MoveRotation(rigidbody.rotation * Quaternion.Euler(0, rotateValue.speed, 0));
+            
+        var direction = rigidbody.transform.forward + new Vector3(0, moveValue.speed, 0);
+        direction.Normalize();
+        direction *= moveValue.speed;
 
         //Action
-        jobHandle = updater.Schedule();
-        jobHandle.Complete();
-        transform.rotation = Quaternion.Euler(
-            Utility.ConvertSysToEngineVector(output[0]));
-        return value;
-    }
+        rigidbody.MovePosition(rigidbody.position + direction);
 
-    public actionValue ObjectMove(Transform transform, actionValue value)
-    {    
-        //Check
-        if(value.timer >= value.endValue)
-            return value;
-
-        //Timer
-        value.timer += value.speed;
-        JobHandle jobHandle;
-
-        //Set
-        addVector updater = new addVector(
-            transform.position, 
-            transform.forward * value.speed, output);
-
-        //Action
-        jobHandle = updater.Schedule();
-        jobHandle.Complete();
-        
-        transform.position = Utility.ConvertSysToEngineVector(output[0]);
-
-        return value;
+        return new Tuple<actionValue, actionValue>(moveValue, rotateValue);
     }
 
     public void Dispose(){
@@ -346,27 +332,19 @@ public class EnemyAction
             _output.Dispose();
     }
 
-    public actionValue ObjectAddForce(Transform transform, actionValue value)
+    /// <summary>
+    /// it will add force to rigidbody by "value.speed * rigidbody.mass"
+    /// </summary>
+    public actionValue ObjectAddForce(Rigidbody rigidbody, Transform forceOrigin, actionValue value)
     {
-        float looseForce = 1f;
         //Check
-        if(value.speed <= 0f)
+        if(value.timer >= value.endValue)
             return value;
 
         //Timer
-        value.speed -= looseForce * Time.deltaTime;
-        JobHandle jobHandle;
+        value.timer += value.speed;
+        rigidbody.AddExplosionForce(value.speed, rigidbody.transform.position, rigidbody.mass * value.speed);
 
-        //Set
-        addVector updater = new addVector(
-            transform.position, 
-            -transform.forward * value.speed, output);
-
-        //Action
-        jobHandle = updater.Schedule();
-        jobHandle.Complete();
-        
-        transform.position = Utility.ConvertSysToEngineVector(output[0]);
         return value;
     }
 }

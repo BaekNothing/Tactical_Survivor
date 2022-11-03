@@ -25,9 +25,62 @@ public class ObjectProcessingMachine : MonoBehaviour
             return _primitiveObjectPrefab;
         }
     }
+#region  CompareGroup
+    GameObject _rigidBodyObjectPrefab;
+    GameObject rigidBodyObjectPrefab
+    {
+        get{
+            if (!_rigidBodyObjectPrefab)
+                _rigidBodyObjectPrefab = Resources.Load<GameObject>("prefabs/RigidBodyObject");
+            return _rigidBodyObjectPrefab;
+        }
+    }
+
+    enum CompareState{
+        optimized,
+        rigidbody
+    }
+    CompareState state; 
+    public void SwitchCompareTarget()
+    {
+        foreach(Transform child in StaticObjects.EnemyRoot.GetComponentInChildren<Transform>())
+            Destroy(child.gameObject);
+        objects.Clear();
+        rigidbodyObjects.Clear();
+
+        if(state == CompareState.optimized)
+        {
+            InitRigidBodyObjects();   
+        }
+        else
+        {
+            InitOptimizedStateObjects();
+        }
+    }
+
+    List<GameObject> rigidbodyObjects = new List<GameObject>();
+    void InitRigidBodyObjects()
+    {
+        for (int i = 0; i < maxObjectCount; i++)
+        {
+            var newObject = Instantiate(rigidBodyObjectPrefab, StaticObjects.EnemyRoot.transform);
+            rigidbodyObjects.Add(newObject);
+            newObject.transform.position =  
+                new Vector3(UnityEngine.Random.Range(2f, 10f), 0.5f,
+                UnityEngine.Random.Range(2f, 10f));
+        }
+        state = CompareState.rigidbody;
+    }
+#endregion
 
     void Start()
     {
+        InitOptimizedStateObjects();
+        isReady = true;
+    }
+
+
+    void InitOptimizedStateObjects(){
         for (int i = 0; i < maxObjectCount; i++)
         {
             var newObject = Instantiate(primitiveObjectPrefab, StaticObjects.EnemyRoot.transform);
@@ -38,7 +91,7 @@ public class ObjectProcessingMachine : MonoBehaviour
                 new Vector3(UnityEngine.Random.Range(2f, 10f), 0.5f,
                 UnityEngine.Random.Range(2f, 10f)));            
         }
-        isReady = true;
+        state = CompareState.optimized;
     }
 
     void Update(){

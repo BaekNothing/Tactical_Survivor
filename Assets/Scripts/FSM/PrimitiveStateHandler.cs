@@ -34,7 +34,8 @@ public class PrimitiveStateHandler
     Dictionary<stateFlag, PrimitiveState> states = new Dictionary<stateFlag, PrimitiveState>(comparer);
     PrimitiveState currentState;
     // public PhysicsData physicsData {get; private set;}
-    public Transform transform {get; private set;}
+    // public Transform transform {get; private set;}
+    public Rigidbody rigidbody {get; private set;}
 
     string sharedData;
 
@@ -52,8 +53,12 @@ public class PrimitiveStateHandler
         this.bundle = bundle;
     }
 
-    public void SetTransform(Transform transform){
-        this.transform = transform;
+    // public void SetTransform(Transform transform){
+    //     this.transform = transform;
+    // }
+
+    public void SetRigidbody(Rigidbody rigidbody){
+        this.rigidbody = rigidbody;
     }
 
     //Frame skip may be slightly slower than the actual time
@@ -69,13 +74,13 @@ public class PrimitiveStateHandler
         }
     }
 
-    public bool IsTransformVisible(Camera camera)
-    {
-        var planes = GeometryUtility.CalculateFrustumPlanes(camera);
-        var point = transform.position;
-        return GeometryUtility.TestPlanesAABB(planes, 
-            new Bounds(point, transform.localScale));
-    }
+    // public bool IsTransformVisible(Camera camera)
+    // {
+    //     var planes = GeometryUtility.CalculateFrustumPlanes(camera);
+    //     var point = transform.position;
+    //     return GeometryUtility.TestPlanesAABB(planes, 
+    //         new Bounds(point, transform.localScale));
+    // }
 
     public void SetCurrentState(stateFlag flag, System.Action action = null)
     {
