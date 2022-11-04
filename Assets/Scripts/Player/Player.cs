@@ -125,7 +125,7 @@ public class Player : MonoBehaviour
         while (index < length)
         {
             var target = objects[index];
-            if(Vector3.Distance(target.transform.position, 
+            if(Vector3.Distance(target.rigidbody.position, 
                 transform.position) < distance)
             {
                 target.primitiveObject.stateHandler.SetCurrentState(stateFlag.dead);
@@ -145,7 +145,7 @@ public class Player : MonoBehaviour
         while (index < length)
         {
             var target = objects[index];
-            if(Vector3.Distance(target.transform.position, 
+            if(Vector3.Distance(target.rigidbody.position, 
                 transform.position) < distance)
             {
                 target.primitiveObject.stateHandler.SetCurrentState(stateFlag.dead);

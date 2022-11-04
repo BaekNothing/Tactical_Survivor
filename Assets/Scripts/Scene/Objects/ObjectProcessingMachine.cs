@@ -84,7 +84,7 @@ public class ObjectProcessingMachine : MonoBehaviour
         for (int i = 0; i < maxObjectCount; i++)
         {
             var newObject = Instantiate(primitiveObjectPrefab, StaticObjects.EnemyRoot.transform);
-            var bundle = new ObjectBundle(i, newObject.transform, new EnemyObject());
+            var bundle = new ObjectBundle(i, newObject.GetComponent<Rigidbody>(), new EnemyObject());
             StaticObjects.processingMachine.objects.Add(bundle);
 
             bundle.primitiveObject.SetsPosition(
@@ -98,7 +98,7 @@ public class ObjectProcessingMachine : MonoBehaviour
         if (!_main.SceneReady) return;
         UpdateStateAction();
         UpdateProjectileAction();
-        SortBundleListbyTransform();
+        //SortBundleListbyTransform();
     }
 
     int stateCounter = 1;
@@ -127,34 +127,34 @@ public class ObjectProcessingMachine : MonoBehaviour
         projectileCounter = (projectileCounter + 1) & 0x1;
     }
 
-    void SortBundleListbyTransform(){
-        if (Time.frameCount % 60 == 0)
-        {
-            for (int i = 0; i < objects.Count - 3; i++)
-            {
-                var prev = objects[i];
-                var compA = objects[i + 1];
-                var compB = objects[i + 2];
+    // void SortBundleListbyTransform(){
+    //     if (Time.frameCount % 60 == 0)
+    //     {
+    //         for (int i = 0; i < objects.Count - 3; i++)
+    //         {
+    //             var prev = objects[i];
+    //             var compA = objects[i + 1];
+    //             var compB = objects[i + 2];
 
-                if (Vector3.Distance(prev.transform.position, compA.transform.position) >
-                    Vector3.Distance(prev.transform.position, compB.transform.position))
-                {
-                    objects[i + 1] = compB;
-                    objects[i + 2] = compA;
-                }
-            }
+    //             if (Vector3.Distance(prev.transform.position, compA.transform.position) >
+    //                 Vector3.Distance(prev.transform.position, compB.transform.position))
+    //             {
+    //                 objects[i + 1] = compB;
+    //                 objects[i + 2] = compA;
+    //             }
+    //         }
 
-            objects.Sort((a, b) =>
-            {
-                int result = a.transform.position.x.CompareTo(b.transform.position.x);
-                if (result == 0)
-                    result = a.transform.position.y.CompareTo(b.transform.position.y);
-                if (result == 0)
-                    result = a.transform.position.z.CompareTo(b.transform.position.z);
-                return result;
-            });
-        }
-    }
+    //         objects.Sort((a, b) =>
+    //         {
+    //             int result = a.transform.position.x.CompareTo(b.transform.position.x);
+    //             if (result == 0)
+    //                 result = a.transform.position.y.CompareTo(b.transform.position.y);
+    //             if (result == 0)
+    //                 result = a.transform.position.z.CompareTo(b.transform.position.z);
+    //             return result;
+    //         });
+    //     }
+    // }
 
     // void CheckPhysicalEvent(ObjectBundle targetObject, Transform player)
     // {

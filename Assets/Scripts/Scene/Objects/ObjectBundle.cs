@@ -5,12 +5,12 @@ using UnityEngine;
 public class ObjectBundle
 {
     public int index;
-    public Transform transform;
+    public Rigidbody rigidbody;
     public PrimitiveObject primitiveObject;
 
-    public ObjectBundle(int index, Transform transform, PrimitiveObject primitiveObject)
+    public ObjectBundle(int index, Rigidbody rigidbody, PrimitiveObject primitiveObject)
     {
-        this.transform = transform;
+        this.rigidbody = rigidbody;
         this.primitiveObject = primitiveObject;
         primitiveObject.Init(this);
     }

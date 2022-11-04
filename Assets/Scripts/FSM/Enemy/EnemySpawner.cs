@@ -38,9 +38,9 @@ public class EnemySpawner : MonoBehaviour
     
     void Spawn(Vector3 newPosition){
         var newObject = Instantiate(primitiveObjectPrefab, StaticObjects.EnemyRoot.transform);
-        var bundle = new ObjectBundle(StaticObjects.processingMachine.objects.Count, newObject.transform, new EnemyObject());
+        var bundle = new ObjectBundle(StaticObjects.processingMachine.objects.Count, 
+            newObject.GetComponent<Rigidbody>(), new EnemyObject());
         StaticObjects.processingMachine.objects.Add(bundle);
-
         bundle.primitiveObject.SetsPosition(newPosition);
     }
 }

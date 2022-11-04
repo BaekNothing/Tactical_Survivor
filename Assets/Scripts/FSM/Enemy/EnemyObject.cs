@@ -18,7 +18,7 @@ public class EnemyObject : PrimitiveObject
     // PhysicsData data;
 
     public override void Init(ObjectBundle bundle){
-        this.transform = bundle.transform;
+        this.rigidbody = bundle.rigidbody;
         Dictionary<stateFlag, Type> stateMap = new Dictionary<stateFlag, Type>(){
             {stateFlag.idle, typeof(EnemyIdle)},
             {stateFlag.move, typeof(EnemyMove)},
@@ -28,11 +28,11 @@ public class EnemyObject : PrimitiveObject
 
         stateHandler.Init(stateMap, "", bundle);
         //stateHandler.SetTransform(transform);
-        stateHandler.SetRigidbody(transform.GetComponent<Rigidbody>());
+        stateHandler.SetRigidbody(rigidbody);
         stateHandler.Action();
 
-        transform.position = new Vector3(UnityEngine.Random.Range(2f, 10f), 
-            0.5f,
-            UnityEngine.Random.Range(2f, 10f));
+        rigidbody.MovePosition(rigidbody.position + new Vector3(
+                UnityEngine.Random.Range(2f, 10f), 0.5f,
+                UnityEngine.Random.Range(2f, 10f)));
     }
 }

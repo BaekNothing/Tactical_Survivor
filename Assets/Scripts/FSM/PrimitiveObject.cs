@@ -219,11 +219,11 @@ public class PrimitiveObject
 
     public PrimitiveStateHandler stateHandler = new PrimitiveStateHandler();
     // PhysicsData data;
-    public Transform transform;
+    public Rigidbody rigidbody;
     public System.Action customAction;
 
     public virtual void Init(ObjectBundle bundle){
-        this.transform = bundle.transform;
+        this.rigidbody = bundle.rigidbody;
         Dictionary<stateFlag, Type> stateMap = new Dictionary<stateFlag, Type>(){
             {stateFlag.idle, typeof(SampleInit)},
             {stateFlag.move, typeof(SampleMove)},
@@ -232,13 +232,13 @@ public class PrimitiveObject
 
         stateHandler.Init(stateMap, "", bundle);
         //stateHandler.SetTransform(transform);
-        stateHandler.SetRigidbody(transform.GetComponent<Rigidbody>());
+        stateHandler.SetRigidbody(rigidbody);
         //stateHandler.SetPhysicsData(data, transform);
         stateHandler.Action();
     }
 
     public void SetsPosition(Vector3 position){
-        transform.position = position;
+        rigidbody.MovePosition(rigidbody.position + position);
     }
 
     public void Action() => stateHandler.Action();
